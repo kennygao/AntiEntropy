@@ -54,12 +54,15 @@ class Replica:
             selfnode = self.merkle
 
         if originnode.value == selfnode.value:
+            print('   Hashes match. Returning from subtree.')
             return []
         elif not originnode.isleaf:
+            print('   Hashes do not match. Recursing into children.')
             left = self.synchronize(origin, originnode.left, selfnode.left, 2 * index)
             right = self.synchronize(origin, originnode.right, selfnode.right, 2 * index + 1)
             return left + right
         else:
+            print('   Resolving conflict at index {}.'.format(index))
             self.resolveconflict(origin, index)
             return [index]
     def resolveconflict(self, origin, index):
@@ -96,6 +99,8 @@ print('Data size: {}.'.format(datasize))
 print('Maximum data value: {}.'.format(maxvalue))
 print('Number of conflicts: {}.'.format(conflicts))
 
+print('')
+
 print('--- Replica 1:')
 print(a)
 print('--- Replica 1 Merkle Tree:')
@@ -113,5 +118,8 @@ b.printmerkle()
 print('')
 
 indices = a.synchronize(b)
+
+print('')
+
 print('Replica 1 and Replica 2 were synchronized at indices {} ({} total).'.format(indices, len(indices)))
 
