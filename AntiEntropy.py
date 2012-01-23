@@ -1,95 +1,117 @@
-class Node:
-    def __init__(self, adjacent_nodes=[], data={}):
-        # data length must be power of 2
-        self.adjacent_nodes = adjacent_nodes
+class Replica:
+    class Datum:
+        def __init__(self, datum, timestamp):
+            self.datum = datum
+            self.timestamp = timestamp
+        def __repr__(self):
+            return str((self.datum, self.timestamp))
+
+    class MerkleNode:
+        def __init__(self, value, left, right, isleaf=False):
+            self.value = value
+            self.left = left
+            self.right = right
+            self.isleaf = isleaf
+
+    # initialize data and compute initial merkle tree
+    def __init__(self, data=[]):
+        # assumption (without loss of generality): data length must be power of 2
         self.data = data
-        self.tomerkle()
-    def __str__(self):
-        # return str((self.adjacent_nodes, self.data))
-        return str(self.data)
-    def __repr__(self):
-        return self.__str__()
+        self.computemerkle()
+    # hash function used by merkle tree computation
     def merklehash(self, s):
+        # do we care if the data match but the timestamps don't?
         return str(s.__hash__())
-    def tomerkle(self):
-        tree = [map(self.merklehash, self.data)]
-        i = len(self.data)
-        while i > 1:
-            i /= 2
-            tmp = []
-            for x in range(i):
-                tmp.append(self.merklehash(tree[0][2 * x] + tree[0][2 * x + 1]))
-            tree.insert(0, tmp)
-        self.merkle = tree
-        return tree
-    def merklediff(self, other, level=0, index=0):
-        if level >= len(self.merkle):
-            return index, other.merkle[-1][index]
-        for i, x in enumerate(self.merkle[level][2 * index:2 * index + 2]):
-            if not self.merkle[level][2 * index + i] == other.merkle[level][2 * index + i]:
-                return self.merklediff(other, level + 1, 2 * index + i)
-        return None
-    # poll neighbors; majority wins
-    def resolveconflict(self, other, index):
-        if self.data[index] == other.data[index]:
-            return
-        keep = 0
-        change = 0
-        for adj in self.adjacent_nodes:
-            if adj.data[index] == self.data[index]:
-                keep += 1
-            elif adj.data[index] == other.data[index]:
-                change += 1
-        # in case of ties, keep
-        if change > keep:
-            self.data[index] = other.data[index]
+    # compute and set merkle tree
+    def computemerkle(self):
+        # children refers to most recently computed level
+        children = [self.MerkleNode(self.merklehash(d.datum), None, None, True) for d in self.data]
+        l = len(self.data)
+        while l > 1:
+            l /= 2
+            parents = []
+            for x in range(l):
+                parents.append(self.MerkleNode(self.merklehash(children[2 * x].value + children[2 * x + 1].value),
+                                               children[2 * x],
+                                               children[2 * x + 1]))
+            children = parents
+        # set to root node
+        self.merkle = children[0]
+    # print merkle tree
+    def printmerkle(self):
+        level = [self.merkle]
+        print(self.merkle.value)
+
+        # holy shit this is so sexy
+        while not level[0].isleaf:
+            nextlevel = [(n.left, n.right) for n in level]
+            level = [child for children in nextlevel for child in children] # flatten list
+            print(", ".join([n.value for n in level]))
+    def synchronize(self, origin, originnode=None, selfnode=None, index=0):
+        if originnode == None:
+            originnode = origin.merkle
+        if selfnode == None:
+            selfnode = self.merkle
+
+        if originnode.value == selfnode.value:
+            return []
+        elif not originnode.isleaf:
+            left = self.synchronize(origin, originnode.left, selfnode.left, 2 * index)
+            right = self.synchronize(origin, originnode.right, selfnode.right, 2 * index + 1)
+            return left + right
         else:
-            other.data[index] = self.data[index]
-        self.tomerkle()
-        other.tomerkle()
+            self.resolveconflict(origin, index)
+            return [index]
+    def resolveconflict(self, origin, index):
+        if self.data[index].timestamp < origin.data[index].timestamp:
+            self.data[index] = origin.data[index]
+        else:
+            origin.data[index] = self.data[index]
+
+        self.computemerkle()
+        origin.computemerkle()
+    def __repr__(self):
+        return str(self.data)
 
 ##########
 
 import random
 
-testdata = map(str, random.sample(range(1000), 16))
-node = Node(data = testdata)
-other = Node(data = [str(int(testdata[0]) + 1)] + testdata[1:])
-third = Node(data = testdata[0:-1] + [str(int(testdata[-1]) + 1)])
-fourth = Node(data = testdata)
-node.adjacent_nodes = [other, third, fourth]
-other.adjacent_nodes = [node, third, fourth]
-third.adjacent_nodes = [node, other, fourth]
+datasize = 16
+maxvalue = 1000
 
-print('--- Node 1:')
-print(node)
-print('--- Node 1 Merkle Tree:')
-for x in node.tomerkle():
-    print(x)
+# test pairwise synchronization
+testdata = {}
+testdata['a'] = map(lambda d, t: Replica.Datum(d, t), map(str, random.sample(range(maxvalue), datasize)), random.sample(range(maxvalue), datasize))
+testdata['b'] = list(testdata['a'])
 
-print('')
+conflicts = random.randint(0, datasize)
+for x in random.sample(range(datasize), conflicts):
+    testdata['b'][x] = Replica.Datum(random.randrange(maxvalue), random.randrange(maxvalue))
 
-print('--- Node 2:')
-print(other)
-print('--- Node 2 Merkle Tree:')
-for x in other.tomerkle():
-    print(x)
+a = Replica(data = testdata['a'])
+b = Replica(data = testdata['b'])
 
-print('')
+print('Data size: {}.'.format(datasize))
+print('Maximum data value: {}.'.format(maxvalue))
+print('Number of conflicts: {}.'.format(conflicts))
 
-print('--- Node 3:')
-print(third)
-print('--- Node 3 Merkle Tree:')
-for x in third.tomerkle():
-    print(x)
+print('--- Replica 1:')
+print(a)
+print('--- Replica 1 Merkle Tree:')
+a.computemerkle()
+a.printmerkle()
 
 print('')
 
-print('Before repair: Node 1 and Node 2 differ at {}'.format(node.merklediff(other)))
-node.resolveconflict(other, node.merklediff(other)[0])
-print('After repair: Node 1 and Node 2 differ at {}'.format(node.merklediff(other)))
+print('--- Replica 2:')
+print(b)
+print('--- Replica 2 Merkle Tree:')
+b.computemerkle()
+b.printmerkle()
 
-print('Before repair: Node 1 and Node 3 differ at {}'.format(node.merklediff(third)))
-node.resolveconflict(third, node.merklediff(third)[0])
-print('After repair: Node 1 and Node 3 differ at {}'.format(node.merklediff(third)))
+print('')
+
+indices = a.synchronize(b)
+print('Replica 1 and Replica 2 were synchronized at indices {} ({} total).'.format(indices, len(indices)))
 
