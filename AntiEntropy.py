@@ -16,10 +16,10 @@ class Replica:
             self.index = index
 
     # initialize data and compute initial merkle tree
-    def __init__(self, data=[], offset=[0, 0]):
+    def __init__(self, data=[]):
         # assumption (without loss of generality): data length must be power of 2
         self.data = data
-        self.offset = offset
+        self.bandwidth = 0
         self.computemerkle()
     # hash function used by merkle tree computation
     def merklehash(self, s):
@@ -62,6 +62,8 @@ class Replica:
         if selfnode == None:
             selfnode = self.merkle
 
+        self.bandwidth += 1
+
         if originnode.value == selfnode.value:
             print('   Hashes match. Returning from subtree.')
             return []
@@ -78,6 +80,7 @@ class Replica:
         if self.data[index].timestamp < origin.data[index].timestamp:
             self.data[index] = origin.data[index]
         else:
+            self.bandwidth += 1
             origin.data[index] = self.data[index]
 
         self.computemerkle()
@@ -104,8 +107,8 @@ conflicts = random.randint(0, datasize)
 for x in random.sample(range(datasize), conflicts):
     testdata['b'][x] = Replica.Datum(random.randrange(maxvalue), random.randrange(maxvalue))
 
-a = Replica(testdata['a'], [10, 0])
-b = Replica(testdata['b'], [510, 0])
+a = Replica(testdata['a'])
+b = Replica(testdata['b'])
 
 print('Data size: {}.'.format(datasize))
 print('Maximum data value: {}.'.format(maxvalue))
@@ -134,3 +137,4 @@ indices = a.synchronize(b)
 print('')
 
 print('Replica 1 and Replica 2 were synchronized at indices {} ({} total).'.format(indices, len(indices)))
+print('Bandwidth cost: {}.'.format(a.bandwidth))
