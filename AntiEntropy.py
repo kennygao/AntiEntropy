@@ -19,7 +19,7 @@ class Replica:
     def __init__(self, data=[]):
         # assumption (without loss of generality): data length must be power of 2
         self.data = data
-        self.bandwidth = 0
+        self.networktraffic = 0
         self.computemerkle()
     # hash function used by merkle tree computation
     def merklehash(self, s):
@@ -62,7 +62,7 @@ class Replica:
         if selfnode == None:
             selfnode = self.merkle
 
-        self.bandwidth += 1
+        self.networktraffic += 1
 
         if originnode.value == selfnode.value:
             print('   Hashes match. Returning from subtree.')
@@ -80,7 +80,7 @@ class Replica:
         if self.data[index].timestamp < origin.data[index].timestamp:
             self.data[index] = origin.data[index]
         else:
-            self.bandwidth += 1
+            self.networktraffic += 1
             origin.data[index] = self.data[index]
 
         self.computemerkle()
@@ -137,4 +137,4 @@ indices = a.synchronize(b)
 print('')
 
 print('Replica 1 and Replica 2 were synchronized at indices {} ({} total).'.format(indices, len(indices)))
-print('Bandwidth cost: {}.'.format(a.bandwidth))
+print('Network traffic cost: {}.'.format(a.networktraffic))
