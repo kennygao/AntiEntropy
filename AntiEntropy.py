@@ -29,7 +29,6 @@ class Replica:
     def computemerkle(self):
         # children refers to most recently computed level
         children = [self.MerkleNode(self.merklehash(d.datum), None, None, True, 0, i) for i, d in enumerate(self.data)]
-        [drawnode(child, self.offset) for child in children]
         l = len(self.data)
         level = 0
         while l > 1:
@@ -44,7 +43,6 @@ class Replica:
                                        level,
                                        x)
                 parents.append(node)
-                drawnode(node, self.offset)
             children = parents
         # set to root node
         self.merkle = children[0]
@@ -93,45 +91,9 @@ class Replica:
 datasize = 16
 maxvalue = 1000
 
-# color constants
-white = [255, 255, 255]
-black = [0, 0, 0]
-
-# utility functions
-def drawtext(text, loc):
-    window.blit(font.render(text, True, black), loc)
-    pygame.display.flip()
-
-def drawdata(rep, loc):
-    for datum in rep.data:
-        pygame.draw.rect(window, black, [loc[0], loc[1], 30, 40], 1)
-        drawtext(str(datum.datum), [loc[0] + 1, loc[1]])
-        drawtext(str(datum.timestamp), [loc[0] + 1, loc[1] + 20])
-        loc[0] += 30
-    pygame.display.flip()
-
-def drawnode(node, offset):
-    x = offset[0] + 15 * (2**node.level - 1) + 30 * 2**node.level * node.index
-    y = 600 - 100 * node.level
-    pygame.draw.rect(window, white, [x, y, 30, 80]) # clear the previous node at this location (hacky)
-    pygame.draw.rect(window, black, [x, y, 30, 80], 1)
-    for chunk in [str(node.value)[i:i + 3] for i in range(0, len(str(node.value)), 3)]: # python is magical
-        drawtext(chunk, [x + 1, y])
-        y += 20
-    pygame.display.flip()
-    pygame.time.Clock().tick(10)
-
 ##########
 
-import pygame
 import random
-
-# init pygame
-pygame.init()
-window = pygame.display.set_mode([1000, 750])
-pygame.display.set_caption('AntiEntropy')
-font = pygame.font.Font(pygame.font.match_font('inconsolata'), 18)
-window.fill(white)
 
 # test pairwise synchronization
 testdata = {}
@@ -146,20 +108,15 @@ a = Replica(testdata['a'], [10, 0])
 b = Replica(testdata['b'], [510, 0])
 
 print('Data size: {}.'.format(datasize))
-drawtext('Data size: {}.'.format(datasize), [0, 0])
 print('Maximum data value: {}.'.format(maxvalue))
-drawtext('Maximum data value: {}.'.format(maxvalue), [0, 20])
 print('Number of conflicts: {}.'.format(conflicts))
-drawtext('Number of conflicts: {}.'.format(conflicts), [0, 40])
 
 print('')
 
 print('--- Replica 1:')
 print(a)
-drawdata(a, [10, 700])
 print('--- Replica 2:')
 print(b)
-drawdata(b, [510, 700])
 
 print('')
 
@@ -177,11 +134,3 @@ indices = a.synchronize(b)
 print('')
 
 print('Replica 1 and Replica 2 were synchronized at indices {} ({} total).'.format(indices, len(indices)))
-
-done = False
-while not done:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
-pygame.quit()
-
