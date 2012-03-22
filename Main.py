@@ -14,6 +14,7 @@ testdata['a'] = map(lambda d, t: MerkleReplica.Datum(d, t), map(str, random.samp
 testdata['b'] = list(testdata['a'])
 
 conflicts = random.randint(0, datasize)
+# conflicts = 0
 for x in random.sample(range(datasize), conflicts):
     testdata['b'][x] = MerkleReplica.Datum(random.randrange(maxvalue), random.randrange(maxvalue))
 

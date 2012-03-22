@@ -1,11 +1,6 @@
-class MerkleReplica:
-    class Datum:
-        def __init__(self, datum, timestamp):
-            self.datum = datum
-            self.timestamp = timestamp
-        def __repr__(self):
-            return str((self.datum, self.timestamp))
+from Replica import Replica
 
+class MerkleReplica(Replica):
     class MerkleNode:
         def __init__(self, value, left, right, isleaf=False, level=0, index=0):
             self.value = value
@@ -21,10 +16,12 @@ class MerkleReplica:
         self.data = data
         self.networktraffic = 0
         self.computemerkle()
+
     # hash function used by merkle tree computation
     def merklehash(self, s):
         # do we care if the data match but the timestamps don't?
         return str(s.__hash__())
+
     # compute and set merkle tree
     def computemerkle(self):
         # children refers to most recently computed level
@@ -46,6 +43,7 @@ class MerkleReplica:
             children = parents
         # set to root node
         self.merkle = children[0]
+
     # print merkle tree
     def printmerkle(self):
         level = [self.merkle]
@@ -56,6 +54,7 @@ class MerkleReplica:
             nextlevel = [(n.left, n.right) for n in level]
             level = [child for children in nextlevel for child in children] # flatten list
             print(", ".join([n.value for n in level]))
+
     def synchronize(self, origin, originnode=None, selfnode=None, index=0):
         if originnode == None:
             originnode = origin.merkle
@@ -76,6 +75,7 @@ class MerkleReplica:
             print('   Resolving conflict at index {}.'.format(index))
             self.resolveconflict(origin, index)
             return [index]
+
     def resolveconflict(self, origin, index):
         if self.data[index].timestamp < origin.data[index].timestamp:
             self.data[index] = origin.data[index]
@@ -85,6 +85,3 @@ class MerkleReplica:
 
         self.computemerkle()
         origin.computemerkle()
-    def __repr__(self):
-        return str(self.data)
-
