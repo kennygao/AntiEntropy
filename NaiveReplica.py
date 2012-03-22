@@ -12,10 +12,10 @@ class NaiveReplica(Replica):
         for index in range(len(self.data)):
             self.networktraffic += 1
             if self.data[index].datum != origin.data[index].datum:
-                print('   Resolving conflict at index {}.'.format(index))
+                # print('   Resolving conflict at index {}.'.format(index))
                 indices.append(index)
                 self.resolveconflict(origin, index)
-        print('   Conflict resolution complete.')
+        # print('   Conflict resolution complete.')
         return indices
 
     def resolveconflict(self, origin, index):

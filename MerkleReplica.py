@@ -64,15 +64,15 @@ class MerkleReplica(Replica):
         self.networktraffic += 1
 
         if originnode.value == selfnode.value:
-            print('   Hashes match. Returning from subtree.')
+            # print('   Hashes match. Returning from subtree.')
             return []
         elif not originnode.isleaf:
-            print('   Hashes do not match. Recursing into children.')
+            # print('   Hashes do not match. Recursing into children.')
             left = self.synchronize(origin, originnode.left, selfnode.left, 2 * index)
             right = self.synchronize(origin, originnode.right, selfnode.right, 2 * index + 1)
             return left + right
         else:
-            print('   Resolving conflict at index {}.'.format(index))
+            # print('   Resolving conflict at index {}.'.format(index))
             self.resolveconflict(origin, index)
             return [index]
 

@@ -26,19 +26,19 @@ print('Number of conflicts: {}.'.format(conflicts))
 
 print('')
 
-print('--- Replica 1:')
-print(testdata['a'])
-print('--- Replica 2:')
-print(testdata['b'])
+# print('--- Replica 1:')
+# print(testdata['a'])
+# print('--- Replica 2:')
+# print(testdata['b'])
 
-print('')
+# print('')
 
 a = NaiveReplica(list(testdata['a']))
 b = NaiveReplica(list(testdata['b']))
 
-indices = a.synchronize(b)
+print('--- Naive scheme:')
 
-print('')
+indices = a.synchronize(b)
 
 print('Replica 1 and Replica 2 were synchronized at indices {} ({} total).'.format(indices, len(indices)))
 print('Network traffic cost: {}.'.format(a.networktraffic))
@@ -57,9 +57,11 @@ b = MerkleReplica(list(testdata['b']))
 
 # print('')
 
-indices = a.synchronize(b)
+print('--- Merkle tree-based scheme:')
 
-print('')
+indices = a.synchronize(b)
 
 print('Replica 1 and Replica 2 were synchronized at indices {} ({} total).'.format(indices, len(indices)))
 print('Network traffic cost: {}.'.format(a.networktraffic))
+
+print('')
