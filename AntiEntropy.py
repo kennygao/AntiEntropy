@@ -20,16 +20,17 @@ class Replica:
         # assumption (without loss of generality): data length must be power of 2
         self.data = data
         self.offset = offset
-        self.computemerkle()
+        self.computemerkle(False)
     # hash function used by merkle tree computation
     def merklehash(self, s):
         # do we care if the data match but the timestamps don't?
         return str(s.__hash__())
     # compute and set merkle tree
-    def computemerkle(self):
+    def computemerkle(self, draw=True):
         # children refers to most recently computed level
         children = [self.MerkleNode(self.merklehash(d.datum), None, None, True, 0, i) for i, d in enumerate(self.data)]
-        [drawnode(child, self.offset) for child in children]
+        if draw:
+            [drawnode(child, self.offset) for child in children]
         l = len(self.data)
         level = 0
         while l > 1:
@@ -44,7 +45,13 @@ class Replica:
                                        level,
                                        x)
                 parents.append(node)
-                drawnode(node, self.offset)
+                if draw:
+                    # todo: make this better
+                    drawoutline(node.left, green, self.offset)
+                    drawoutline(node.right, green, self.offset)
+                    drawnode(node, self.offset)
+                    drawoutline(node.left, black, self.offset)
+                    drawoutline(node.right, black, self.offset)
             children = parents
         # set to root node
         self.merkle = children[0]
@@ -52,17 +59,27 @@ class Replica:
     def printmerkle(self):
         level = [self.merkle]
         print(self.merkle.value)
+        # drawnode(self.merkle, self.offset)
 
         # holy shit this is so sexy
         while not level[0].isleaf:
             nextlevel = [(n.left, n.right) for n in level]
             level = [child for children in nextlevel for child in children] # flatten list
             print(", ".join([n.value for n in level]))
+            # [drawnode(child, self.offset) for child in level]
     def synchronize(self, origin, originnode=None, selfnode=None, index=0):
         if originnode == None:
             originnode = origin.merkle
         if selfnode == None:
             selfnode = self.merkle
+
+        # todo: make this better
+        drawoutline(originnode, green, origin.offset)
+        drawoutline(selfnode, green, self.offset)
+        # pygame.time.wait(3000)
+        while pygame.event.wait().type != KEYDOWN: pass
+        drawoutline(originnode, black, origin.offset)
+        drawoutline(selfnode, black, self.offset)
 
         if originnode.value == selfnode.value:
             print('   Hashes match. Returning from subtree.')
@@ -82,6 +99,9 @@ class Replica:
         else:
             origin.data[index] = self.data[index]
 
+        drawdata(self, [10, 700])
+        drawdata(origin, [510, 700])
+
         self.computemerkle()
         origin.computemerkle()
     def __repr__(self):
@@ -96,6 +116,7 @@ maxvalue = 1000
 # color constants
 white = [255, 255, 255]
 black = [0, 0, 0]
+green = [0, 255, 0]
 
 # utility functions
 def drawtext(text, loc):
@@ -104,10 +125,17 @@ def drawtext(text, loc):
 
 def drawdata(rep, loc):
     for datum in rep.data:
+        pygame.draw.rect(window, white, [loc[0], loc[1], 30, 40]) # clear the previous node at this location (hacky)
         pygame.draw.rect(window, black, [loc[0], loc[1], 30, 40], 1)
         drawtext(str(datum.datum), [loc[0] + 1, loc[1]])
         drawtext(str(datum.timestamp), [loc[0] + 1, loc[1] + 20])
         loc[0] += 30
+    pygame.display.flip()
+
+def drawoutline(node, color, offset):
+    x = offset[0] + 15 * (2**node.level - 1) + 30 * 2**node.level * node.index
+    y = 600 - 100 * node.level
+    pygame.draw.rect(window, color, [x, y, 30, 80], 1)
     pygame.display.flip()
 
 def drawnode(node, offset):
@@ -119,11 +147,13 @@ def drawnode(node, offset):
         drawtext(chunk, [x + 1, y])
         y += 20
     pygame.display.flip()
-    pygame.time.Clock().tick(10)
+    # pygame.time.wait(300)
+    while pygame.event.wait().type != KEYDOWN: pass
 
 ##########
 
 import pygame
+from pygame.locals import *
 import random
 
 # init pygame
@@ -139,6 +169,7 @@ testdata['a'] = map(lambda d, t: Replica.Datum(d, t), map(str, random.sample(ran
 testdata['b'] = list(testdata['a'])
 
 conflicts = random.randint(0, datasize)
+conflicts = 1 # todo: revert
 for x in random.sample(range(datasize), conflicts):
     testdata['b'][x] = Replica.Datum(random.randrange(maxvalue), random.randrange(maxvalue))
 
