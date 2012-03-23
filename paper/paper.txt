@@ -1,0 +1,58 @@
+- Abstract
+(old draft from September; needs to be updated, but included for reference.)
+
+In the study of database systems, the idea of consistency (the C in ACID) is one of the most basic. Yet, it’s an idea that causes problems for web services and websites everywhere. Every sufficiently large system is eventually confronted with the need to scale horizontally (that is, to distribute the workload across multiple machines) to meet the demand for their service, but once data has been replicated across multiple nodes, the task of maintaining consistency becomes much more challenging than it is for single-node systems.
+
+Eric Brewer’s CAP theorem reveals an unavoidable limitation when dealing with distributed database systems. That is, it’s impossible to simultaneously guarantee consistency, availability, and partition tolerance – the tradeoff must be made. In light of this, a number of strategies exist to provide varying degrees of consistency, each with their own degrees of detriment upon availability and partition tolerance. Example include the two-phase commit protocol (2PC), Paxos consensus, read-repair, and hinted handoff.
+
+I propose to investigate several such strategies by implementing them in an existing distributed database system (tentatively Cassandra, which is currently being used by Facebook, Twitter, Reddit, and many more high-traffic web services). Then, I will conduct tests against each strategy (both preexisting and newly-implemented) while varying the state of node availability and network partitioning. Through this, I hope to be able to reach evidence-backed conclusions of which strategies are most effective in which types of applications and environments, and discover opportunities for further research.
+
+- Introduction
+(to do: write this)
+
+- Literature Review (or: Background)
+(not sure how relevant this section actually is; I can't see this being in a published paper, but since I had typed it up already, I decided to leave it in for now.)
+
+The first stage of my progress this year, the literature review, was defined by a handful of papers that were particularly influential in establishing my knowledge of the study of distributed databases and in helping me realize what I was and was not interested in learning more about. I chose Lakshman and Malik's Cassandra — A Decentralized Structured Storage System (http://www.cs.cornell.edu/projects/ladis2009/papers/lakshman-ladis2009.pdf) to serve as my introduction to the inner workings of distributed database systems, mainly due to recognizing the name and knowing that it's used within the implementations of many of the web's largest online services. At the same time, my main interest within the field was in applying some degree of rigor to evaluating the relative merits of distributed database systems. This led me to investigating methods for performance benchmarking, and Cooper et al.'s Benchmarking Cloud Serving Systems with YCSB (http://research.yahoo.com/files/ycsb.pdf). Finally, to help establish the theoretical background for the problems inherent in designing distributed database systems, I found Pritchett's BASE: an Acid Alternative (http://portal.acm.org/ft_gateway.cfm?id=1394128&type=pdf) and Vogels's Eventually Consistent (http://portal.acm.org/ft_gateway.cfm?id=1466448&type=pdf) to be helpful.
+
+- Anti-Entropy
+("real" content starts here)
+
+-- Motivation
+Explained simply, anti-entropy (sometimes called replica synchronization) is the process in which all of the replicas of a piece of data (which may be stored in arbitrary physical locations) are compared, then are all updated to the latest version among all of the replicas.
+
+It may not be immediately obvious why anti-entropy is even necessary in a robustly-implemented distributed database system. After all, a traditional quorum approach will perform well given adequate availability, and additional techniques such as hinted handoff can be used to handle cases in which availability is poor. But even in these circumstances, prolonged unavailability will cause the quorum approach to fail (if only R nodes are available and less than R nodes have the latest version of the replicated data, then every read will fail). In addition, additional techniques will tend to have edge cases that prevent them from functioning as expected (for hinted handoff, consider the case where the node containing the hint for an unavailable node becomes itself unavailable at the same time that the original node becomes available; the hint is lost and the data is not updated).
+
+Thus, anti-entropy serves as a way to increase the situations under which existing consistency techniques will be able to succeed (e.g. meet quorum).
+
+-- Approach/Implementation
+(discussion on network traffic, optimization via Merkle trees, alternative methods)
+two parts:
+  pairwise communication (merkle trees vs. alternatives)
+    merkle trees lower network communication at the cost of local i/o
+    merkle trees require that the replicas are more similar than different
+    two ways to implement merkle trees:
+      send entire tree, compare locally
+      send one level at a time, only expanding differing subtrees
+  who communicates with who, and when (all possible pairs, rings, randomly, etc.)
+
+-- Results
+http://stackoverflow.com/questions/5486304/explain-merkle-trees-for-use-in-eventual-consistency
+goal
+  measurable algorithms
+
+things to test
+  correctness
+  performance
+    number of transmissions
+    total data transmitted
+    data per transmission
+    speed
+  robustness
+
+- Algorithm Visualization
+(if deemed appropriate for this paper, and if nontrivial work is put into this area)
+
+- Discussion
+
+- Conclusions
