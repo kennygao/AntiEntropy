@@ -27,14 +27,6 @@ results can be presented in a line graph of the number of conflicts vs performan
 datum size vs. hash size
 replace conflict count with simulation of writes with chance of nonpropagation
 
---- to do ---
-poster rough draft
-implement partial merkle trees (only one level, or only x levels)
-implement nonbinary merkle trees
-qualitatively evaluate robustness of methods
-consider measuring time
-run benchmarks with large sample size
-
 --- poster outline ---
 title
 introduction - explain context behind and around anti-entropy
@@ -44,3 +36,10 @@ approach and implementation
 results - graphs!
 discussion and further work
 conclusions
+
+--- to do ---
+implement partial merkle trees (only one level, or only x levels)
+implement nonbinary merkle trees
+qualitatively evaluate robustness of methods
+consider measuring time
+run benchmarks with large sample size
