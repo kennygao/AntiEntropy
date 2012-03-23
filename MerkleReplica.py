@@ -14,7 +14,7 @@ class MerkleReplica(Replica):
     def __init__(self, data=[]):
         # assumption (without loss of generality): data length must be power of 2
         self.data = data
-        self.networktraffic = 0
+        self.networkusage = 0
         self.computemerkle()
 
     # hash function used by merkle tree computation
@@ -61,7 +61,7 @@ class MerkleReplica(Replica):
         if selfnode == None:
             selfnode = self.merkle
 
-        self.networktraffic += 1
+        self.networkusage += 1
 
         if originnode.value == selfnode.value:
             # print('   Hashes match. Returning from subtree.')
@@ -80,7 +80,7 @@ class MerkleReplica(Replica):
         if self.data[index].timestamp < origin.data[index].timestamp:
             self.data[index] = origin.data[index]
         else:
-            self.networktraffic += 1
+            self.networkusage += 1
             origin.data[index] = self.data[index]
 
         self.computemerkle()

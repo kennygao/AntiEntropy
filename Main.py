@@ -5,7 +5,7 @@ from MerkleReplica import MerkleReplica
 # init parameters
 maxvalue = 1000
 datacount = 32
-testcount = 100
+samplesize = 100
 
 ##########
 
@@ -13,14 +13,14 @@ import random
 
 print('Data count: {}.'.format(datacount))
 print('Maximum data value: {}.'.format(maxvalue))
-print('Number of conflicts: {}.'.format(conflicts))
+print('Sample size: {}.'.format(samplesize))
 
 for conflicts in range(datacount):
-    networktraffic = {}
-    networktraffic['naive'] = []
-    networktraffic['merkle'] = []
+    networkusage = {}
+    networkusage['naive'] = []
+    networkusage['merkle'] = []
 
-    for _ in range(testcount):
+    for _ in range(samplesize):
         testdata = {}
         testdata['a'] = map(lambda d, t: Replica.Datum(d, t), map(str, random.sample(range(maxvalue), datacount)), random.sample(range(maxvalue), datacount))
         testdata['b'] = list(testdata['a'])
@@ -33,15 +33,15 @@ for conflicts in range(datacount):
 
         indices = a.synchronize(b)
 
-        # print('Naive scheme cost: {}.'.format(a.networktraffic))
-        networktraffic['naive'].append(a.networktraffic)
+        # print('Naive scheme cost: {}.'.format(a.networkusage))
+        networkusage['naive'].append(a.networkusage)
 
         a = MerkleReplica(list(testdata['a']))
         b = MerkleReplica(list(testdata['b']))
 
         indices = a.synchronize(b)
 
-        # print('Merkle tree-based scheme cost: {}.'.format(a.networktraffic))
-        networktraffic['merkle'].append(a.networktraffic)
+        # print('Merkle tree-based scheme cost: {}.'.format(a.networkusage))
+        networkusage['merkle'].append(a.networkusage)
 
-    print([sum(networktraffic[n], 0.0) / testcount for n in networktraffic])
+    print([sum(networkusage[n], 0.0) / samplesize for n in networkusage])

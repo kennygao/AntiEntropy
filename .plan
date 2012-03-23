@@ -34,3 +34,4 @@ implement partial merkle trees (only one level, or only x levels)
 implement nonbinary merkle trees
 qualitatively evaluate robustness of methods
 consider measuring time
+run benchmarks with large sample size
