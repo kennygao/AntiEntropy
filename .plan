@@ -1,0 +1,32 @@
+idea:
+measure performance of anti-entropy methods
+
+what performance is:
+bandwidth (straightforward to reconcile simulation vs. real-world)
+time (difficult to reconcile simulation vs. real-world)
+robustness during network instability (qualitative, but worth looking at)
+
+what to measure:
+base case - pairwise comparison of all data
+one level of hashing (one top level hash, then base case)
+additional levels?
+full merkle tree
+variation: non-binary merkle tree
+optimizations on top of the above (lazy vs eager hash computation, sending trees one level at a time, etc.)
+
+elaboration:
+given an x% chance of a write not propagating from one node to another, how well do the various anti-entropy methods perform after y writes? for example, the naive method becomes the best after a certain number of writes (after the two replicas no longer resemble one another) whereas methods with a top-level hash perform the best with a low number of writes (high probability of replicas still being synchronized).
+can be presented in a graph with x-axis being the number of writes between synchronizations and y-axis being performance, and one line per synchronization method.
+
+also consider:
+size of data vs. size of hashes - pick realistic values for these instead of making them variables (4k blocks with 256-bit hashes?)
+
+to do:
+figure out what to do with data size vs hash size
+write a benchmark runner that varies variables, repeats benchmarks adequately
+graph results
+poster rough draft
+implement partial merkle trees (only one level, or only x levels)
+implement nonbinary merkle trees
+qualitatively evaluate robustness of methods
+consider measuring time
