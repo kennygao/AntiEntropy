@@ -4,7 +4,7 @@ from MerkleReplica import MerkleReplica
 
 # init parameters
 maxvalue = 1000
-datacount = 32
+datacount = 16
 samplesize = 100
 
 ##########

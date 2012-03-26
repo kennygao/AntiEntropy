@@ -2,17 +2,17 @@
 evaluate performance of anti-entropy algorithms
 
 --- what performance is ---
-bandwidth (straightforward to reconcile simulation vs. real-world)
-time (difficult to reconcile simulation vs. real-world)
+network usage (straightforward to reconcile simulation vs. real-world)
+speed (time) (difficult to reconcile simulation vs. real-world)
 robustness during network instability (qualitative, but worth looking at)
 
 --- what to measure ---
-base case - pairwise comparison of all data
+naive case - pairwise comparison of all data
 one level of hashing (one top level hash, then base case)
 additional levels?
 full merkle tree
 variation: non-binary merkle tree
-optimizations on top of the above (lazy vs eager hash computation, sending trees one level at a time, etc.)
+variation: lazy hash computation
 
 --- elaboration ---
 given:
@@ -29,6 +29,7 @@ replace conflict count with simulation of writes with chance of nonpropagation
 
 --- poster outline ---
 title
+byline
 introduction - explain context behind and around anti-entropy
 visualization
 motivation for evaluating performance
