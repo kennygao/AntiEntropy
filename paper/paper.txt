@@ -1,4 +1,7 @@
 - Abstract
+
+Distributed databases circumvent numerous performance issues presented by traditional databases, but introduce inherent limitations of their own - Brewer's CAP theorem states that a distributed system cannot provide all three properties of consistency, availability, and partition tolerance at the same time. This typically results in consistency being scaled back to the weaker eventual consistency. in order to enforce eventual consistency in a system containing replicated data, distributed databases like Amazon's Dynamo and Apache Cassandra make use of a process called anti-entropy, implemented using Merkle trees. In my thesis work, I evaluate the performance of Merkle tree-based anti-entropy and look at ways in which it can be improved.
+
 (old draft from September; needs to be updated, but included for reference.)
 
 In the study of database systems, the idea of consistency (the C in ACID) is one of the most basic. Yet, it’s an idea that causes problems for web services and websites everywhere. Every sufficiently large system is eventually confronted with the need to scale horizontally (that is, to distribute the workload across multiple machines) to meet the demand for their service, but once data has been replicated across multiple nodes, the task of maintaining consistency becomes much more challenging than it is for single-node systems.
