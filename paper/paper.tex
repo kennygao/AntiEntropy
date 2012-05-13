@@ -1,0 +1,46 @@
+\title{Evaluating Performance of Anti-Entropy Algorithms}
+\author{Kenny Gao and Sriram Mohan}
+\date{\today}
+
+\documentclass[10pt,letterpaper]{report}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Distributed databases circumvent numerous performance issues presented by traditional databases, but introduce inherent limitations of their own - Brewer's CAP theorem states that a distributed system cannot provide all three properties of consistency, availability, and partition tolerance at the same time. This typically results in consistency being scaled back to the weaker eventual consistency. in order to enforce eventual consistency in a system containing replicated data, distributed databases like Amazon's Dynamo and Apache Cassandra make use of a process called anti-entropy, implemented using Merkle trees. In my thesis work, I evaluate the performance of Merkle tree-based anti-entropy and look at ways in which it can be improved.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+\section{Background}
+
+\subsection{Distributed Databases}
+
+\subsection{The CAP Theorem}
+
+\subsection{Eventual Consistency}
+
+\subsection{The Need for Anti-Entropy}
+
+\subsection{Merkle Trees}
+
+\section{Motivation/Evaluating Performance}
+
+\section{Approach}
+
+\section{Implementation}
+
+\section{Results}
+
+\section{Implications}
+
+\section{Further Work}
+
+\end{document}
